@@ -33,11 +33,11 @@ public:
     void push_back(const T& value)
     {
         growth.lock();
-        flag = true;
-        while (cnt != 0) {}
 
         if (size == capacity)
         {
+            flag = true;
+            while (cnt != 0) {}
             size_t new_capacity = capacity * 2 + 1;
             T* new_data = new int[new_capacity];
             for (int i = 0; i < size; i++)
@@ -47,12 +47,12 @@ public:
             delete[] data;
             data = new_data;
             capacity = new_capacity;
+            flag = false;
         }
 
         data[size] = value;
         size++;
 
-        flag = false;
         growth.unlock();
     }
 

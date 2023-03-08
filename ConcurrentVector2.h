@@ -1,19 +1,23 @@
 #pragma once
 #include <mutex>
 
-struct Accessor {
+struct Accessor
+{
     std::atomic<int>& counter;
-    Accessor(std::atomic<int>& counter) : counter(counter) {
+    Accessor(std::atomic<int>& counter) : counter(counter)
+    {
 
     }
 
-    ~Accessor() {
+    ~Accessor()
+    {
         counter--;
     }
 };
 
 template<typename T>
-class Vector {
+class Vector2
+{
 private:
     T* data;
     size_t size;
@@ -22,19 +26,22 @@ private:
     std::atomic<int> cnt;
     std::mutex growth;
 public:
-    Vector() : data(nullptr), size(0), capacity(0), flag(false), cnt(0) {
-
+    Vector2() : data(nullptr), size(0), capacity(0), flag(false), cnt(0)
+    {
     }
 
-    void push_back(const T& value) {
+    void push_back(const T& value)
+    {
         growth.lock();
         flag = true;
         while (cnt != 0) {}
 
-        if (size == capacity) {
+        if (size == capacity)
+        {
             size_t new_capacity = capacity * 2 + 1;
             T* new_data = new int[new_capacity];
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < size; i++)
+            {
                 new_data[i] = data[i];
             }
             delete[] data;
@@ -49,24 +56,56 @@ public:
         growth.unlock();
     }
 
-    size_t get_size() const {
+    size_t get_size() const
+    {
         return size;
     }
 
-    T& operator[](size_t i) {
-        Accessor accessor(cnt);
-        while (true) {
-            while (flag) {}
-            cnt++;
-            if (flag)
-                cnt--;
-            else
-                break;
-        }
+    T& operator[](size_t i)
+    {
         return data[i];
     }
 
-    ~Vector() {
+    void write(size_t index, const T& value)
+    {
+        Accessor accessor(cnt);
+        while (true)
+        {
+            while (flag) {}
+            cnt++;
+            if (flag)
+            {
+                cnt--;
+            }
+            else
+            {
+                break;
+            }
+        }
+        data[index] = value;
+    }
+
+    T read(size_t index)
+    {
+        Accessor accessor(cnt);
+        while (true)
+        {
+            while (flag) {}
+            cnt++;
+            if (flag)
+            {
+                cnt--;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return data[index];
+    }
+
+    ~Vector2()
+    {
         delete[] data;
     }
 };

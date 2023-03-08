@@ -3,23 +3,27 @@
 #include <shared_mutex>
 
 template<typename T>
-class Vector {
+class Vector3
+{
 private:
     T* data;
     size_t size;
     size_t capacity;
-    std::shared_mutex mutex_;
+    std::shared_mutex mut;
 public:
-    Vector() : data(nullptr), size(0), capacity(0) {
-
+    Vector3() : data(nullptr), size(0), capacity(0)
+    {
     }
 
-    void push_back(const T& value) {
-        std::unique_lock<std::shared_mutex> lock(mutex_);
-        if (size == capacity) {
+    void push_back(const T& value)
+    {
+        std::unique_lock<std::shared_mutex> lock(mut);
+        if (size == capacity)
+        {
             size_t new_capacity = capacity * 2 + 1;
             T* new_data = new int[new_capacity];
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < size; i++)
+            {
                 new_data[i] = data[i];
             }
             delete[] data;
@@ -31,16 +35,35 @@ public:
         size++;
     }
 
-    size_t get_size() const {
+    size_t get_size() const
+    {
         return size;
     }
 
-    T& operator[](size_t i) {
-        std::shared_lock<std::shared_mutex> lock(mutex_);
+    T& operator[](size_t i)
+    {
         return data[i];
     }
 
-    ~Vector() {
+    const T& operator[](size_t i) const
+    {
+        return data[i];
+    }
+    
+    void write(size_t index, const T& value)
+    {
+        std::shared_lock<std::shared_mutex> lock(mut);
+        data[index] = value;
+    }
+
+    T read(size_t index)
+    {
+        std::shared_lock<std::shared_mutex> lock(mut);
+        return data[index];
+    }
+
+    ~Vector3()
+    {
         delete[] data;
     }
 };

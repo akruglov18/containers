@@ -1,0 +1,22 @@
+on: [push, pull_request]
+
+jobs:
+  windows-msvc-build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.3
+    - name: Build
+      run: |
+        # git submodule update --init --recursive
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release
+        cd ..
+    # - name: Run
+    #   run: |
+    #     cd build/bin
+    #     ./containers_tests
+    #     ./main

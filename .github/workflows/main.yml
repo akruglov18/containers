@@ -9,7 +9,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.3
     - name: Build
       run: |
-        # git submodule update --init --recursive
+        git submodule update --init --recursive
         mkdir build
         cd build
         cmake ..

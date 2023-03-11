@@ -1,0 +1,4 @@
+add_subdirectory(ParallelVector)
+add_subdirectory(ParallelVector2)
+add_subdirectory(ParallelVector3)
+add_subdirectory(StdVector)

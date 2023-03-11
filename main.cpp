@@ -1,10 +1,10 @@
-#include "ConcurrentVector.h"
-#include "ConcurrentVector2.h"
-#include "ConcurrentVector3.h"
+#include "ParallelVector.h"
+#include "ParallelVector2.h"
+#include "ParallelVector3.h"
 
 int main() {
-    Vector<int, 100> a;
-    Vector2<int> b;
-    Vector3<int> c;
+    ParallelVector<int> a;
+    ParallelVector2<int> b;
+    ParallelVector3<int, 100> c;
     return 0;
 }

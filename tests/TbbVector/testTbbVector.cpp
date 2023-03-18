@@ -2,13 +2,14 @@
 #include <vector>
 #include <thread>
 #include <tuple>
+#include <tbb/tbb.h>
 
 namespace {
 
-std::vector<size_t> threads_count = {1};
+std::vector<size_t> threads_count = {1, 4, 6, 8, 10, 12};
 std::vector<size_t> elem_count = {1000, 10000, 100000, 1000000};
 
-void pushBacks(std::vector<int>& v, int s, int e) {
+void pushBacks(tbb::concurrent_vector<int>& v, int s, int e) {
     for (int i = s; i < e; i++) {
         v.push_back(i);
     }
@@ -19,7 +20,7 @@ TEST_P(TestStdVector, push_back) {
     auto params = GetParam();
     size_t threads_num = std::get<0>(params);
     size_t count_per_thread = std::get<1>(params);
-    std::vector<int> v;
+    tbb::concurrent_vector<int> v;
     std::vector<std::thread> threads(threads_num);
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < threads_num; i++) {

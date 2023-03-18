@@ -1,4 +1,4 @@
-set(ProjectId testParallelVector)
+set(ProjectId TestParallelVector)
 project(${ProjectId})
 
 add_executable(${ProjectId} main.cpp testParallelVector.cpp)

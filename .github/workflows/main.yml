@@ -14,9 +14,9 @@ jobs:
         cd build
         cmake ..
         cmake --build . --config Release
-        cd ..
-    # - name: Run
-    #   run: |
-    #     cd build/bin
-    #     ./containers_tests
-    #     ./main
+        cd bin
+        ./TestParallelVector.exe
+        ./TestParallelVector2.exe
+        ./TestParallelVector3.exe
+        ./TestStdVector.exe
+        ./TestTbbVector.exe

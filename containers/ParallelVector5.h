@@ -23,9 +23,9 @@ public:
     void push_back(const T& val)
     {
         size_t num_elem = size.fetch_add(1);
-        while (size >= capacity) {
+        while (num_elem >= capacity) {
             std::unique_lock<std::shared_mutex> lock(mut);
-            while (size >= capacity) {
+            while (num_elem >= capacity) {
                 addNewBlock();
             }
         }

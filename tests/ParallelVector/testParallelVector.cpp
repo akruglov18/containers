@@ -111,7 +111,7 @@ TEST(ParallelVector, common_test) {
         for (int i = 0; i < count; i++) {
             if (v.get_size() > 0) {
                 int ind = rnd() % v.get_size();
-                v.write(ind, rnd());
+                v.write(ind, i);
             }
         }
     };

@@ -111,7 +111,7 @@ TEST(ParallelVector2, common_test) {
         for (int i = 0; i < count; i++) {
             if (v.get_size() > 0) {
                 int ind = rnd() % v.get_size();
-                v.write(ind, rnd());
+                v.write(ind, i);
             }
         }
     };
@@ -126,15 +126,12 @@ TEST(ParallelVector2, common_test) {
     for (int i = 0; i < thread_count_pb; i++) {
         threads.push_back(std::thread(func_push_back, std::ref(v), count_action));
     }
-    // std::cout << "thread_pb\n";
     for (int i = 0; i < thread_count_read; i++) {
         threads.push_back(std::thread(func_read, std::ref(v), std::ref(res[i]), count_action));
     }
-    // std::cout << "thread_read\n";
     for (int i = 0; i < thread_count_write; i++) {
         threads.push_back(std::thread(func_write, std::ref(v), count_action));
     }
-    // std::cout << "thread_write\n";
     for (int i = 0; i < threads.size(); i++) {
         threads[i].join();
     }

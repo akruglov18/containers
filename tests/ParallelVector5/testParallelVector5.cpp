@@ -86,60 +86,57 @@ INSTANTIATE_TEST_SUITE_P(/**/, TestParallelVector5Suite1,
 );
 
 TEST(ParallelVector5, common_test) {
-    //const size_t thread_count_pb = 2;
-    //const size_t thread_count_read = 4;
-    //const size_t thread_count_write = 4;
-    //const size_t count_action = 2000000;
-    //auto func_push_back = [](ParallelVector5<int, 1000>& v, size_t count) {
-    //    for (int i = 0; i < count; i++) {
-    //        v.push_back(i);
-    //    }
-    //};
-    //auto func_read = [](ParallelVector5<int, 1000>& v, int& res, size_t count) {
-    //    int sum = 0;
-    //    std::mt19937 rnd;
-    //    for (int i = 0; i < count; i++) {
-    //        if (v.get_size() > 0) {
-    //            int ind = rnd() % v.get_size();
-    //            sum += v[ind];
-    //        }
-    //    }
-    //    res = sum;
-    //};
-    //auto func_write = [](ParallelVector5<int, 1000>& v, size_t count) {
-    //    std::mt19937 rnd;
-    //    for (int i = 0; i < count; i++) {
-    //        if (v.get_size() > 0) {
-    //            int ind = rnd() % v.get_size();
-    //            v[ind] = rnd();
-    //        }
-    //    }
-    //};
+    const size_t thread_count_pb = 2;
+    const size_t thread_count_read = 4;
+    const size_t thread_count_write = 4;
+    const size_t count_action = 2000000;
+    auto func_push_back = [](ParallelVector5<int, 1000>& v, size_t count) {
+       for (int i = 0; i < count; i++) {
+           v.push_back(i);
+       }
+    };
+    auto func_read = [](ParallelVector5<int, 1000>& v, int& res, size_t count) {
+       int sum = 0;
+       std::mt19937 rnd;
+       for (int i = 0; i < count; i++) {
+           if (v.get_size() > 0) {
+               int ind = rnd() % v.get_size();
+               sum += v[ind];
+           }
+       }
+       res = sum;
+    };
+    auto func_write = [](ParallelVector5<int, 1000>& v, size_t count) {
+       std::mt19937 rnd;
+       for (int i = 0; i < count; i++) {
+           if (v.get_size() > 0) {
+               int ind = rnd() % v.get_size();
+               v[ind] = i;
+           }
+       }
+    };
 
-    //ParallelVector5<int, 1000> v;
-    //std::vector<std::thread> threads;
-    //std::size_t thread_count = thread_count_pb + thread_count_read + thread_count_write;
-    //threads.reserve(thread_count);
-    //std::vector<int> res(thread_count_read);
+    ParallelVector5<int, 1000> v;
+    std::vector<std::thread> threads;
+    std::size_t thread_count = thread_count_pb + thread_count_read + thread_count_write;
+    threads.reserve(thread_count);
+    std::vector<int> res(thread_count_read);
 
-    //auto start = std::chrono::high_resolution_clock::now();
-    //for (int i = 0; i < thread_count_pb; i++) {
-    //    threads.push_back(std::thread(func_push_back, std::ref(v), count_action));
-    //}
-    //// std::cout << "thread_pb\n";
-    //for (int i = 0; i < thread_count_read; i++) {
-    //    threads.push_back(std::thread(func_read, std::ref(v), std::ref(res[i]), count_action));
-    //}
-    //// std::cout << "thread_read\n";
-    //for (int i = 0; i < thread_count_write; i++) {
-    //    threads.push_back(std::thread(func_write, std::ref(v), count_action));
-    //}
-    //// std::cout << "thread_write\n";
-    //for (int i = 0; i < threads.size(); i++) {
-    //    threads[i].join();
-    //}
-    //auto finish = std::chrono::high_resolution_clock::now();
-    //std::cout << "time: " << (finish - start).count() / 1e9 << "\n";
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < thread_count_pb; i++) {
+       threads.push_back(std::thread(func_push_back, std::ref(v), count_action));
+    }
+    for (int i = 0; i < thread_count_read; i++) {
+       threads.push_back(std::thread(func_read, std::ref(v), std::ref(res[i]), count_action));
+    }
+    for (int i = 0; i < thread_count_write; i++) {
+       threads.push_back(std::thread(func_write, std::ref(v), count_action));
+    }
+    for (int i = 0; i < threads.size(); i++) {
+       threads[i].join();
+    }
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::cout << "time: " << (finish - start).count() / 1e9 << "\n";
 }
 
 }

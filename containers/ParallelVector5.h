@@ -11,26 +11,28 @@ class ParallelVector5
 private:
     T** data;
     std::atomic_size_t size;
+    std::atomic_size_t cur_elem;
     size_t capacity;
     size_t ptr_count;
     std::shared_mutex mut;
 
 public:
-    ParallelVector5() : data(nullptr), size(0), capacity(0), ptr_count(0)
+    ParallelVector5() : data(nullptr), size(0), cur_elem(0), capacity(0), ptr_count(0)
     {
     }
 
     void push_back(const T& val)
     {
-        size_t num_elem = size.fetch_add(1);
-        while (num_elem >= capacity) {
+        size_t num_elem = cur_elem.fetch_add(1);
+        if (num_elem >= capacity) {
             std::unique_lock<std::shared_mutex> lock(mut);
-            while (num_elem >= capacity) {
+            if (num_elem >= capacity) {
                 addNewBlock();
             }
         }
         std::shared_lock<std::shared_mutex> lock(mut);
         data[num_elem / block_size][num_elem % block_size] = val;
+        size++;
     }
 
     T& operator[](std::size_t i)

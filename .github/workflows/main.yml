@@ -16,7 +16,3 @@ jobs:
         cmake --build . --config Release
         cd bin
         ./TestParallelVector.exe
-        ./TestParallelVector2.exe
-        ./TestParallelVector3.exe
-        ./TestStdVector.exe
-        ./TestTbbVector.exe

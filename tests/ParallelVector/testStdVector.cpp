@@ -4,14 +4,12 @@
 #include <tuple>
 #include <random>
 #include <numeric>
+#include "Storage.h"
 
 namespace {
 
 std::vector<size_t> threads_count = {1};
 std::vector<size_t> elem_count = {1000, 10000, 100000, 1000000};
-
-constexpr int RUNS = 10;
-constexpr int TRUNCATIONS = 2;
 
 typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestStdVectorSuite0;
 TEST_P(TestStdVectorSuite0, push_back) {
@@ -24,7 +22,7 @@ TEST_P(TestStdVectorSuite0, push_back) {
             v.push_back(i);
         }
     };
-    for (int t = 0; t < RUNS; t++) {
+    for (int t = 0; t < Storage::RUNS; t++) {
         std::vector<int> v;
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
@@ -38,7 +36,7 @@ TEST_P(TestStdVectorSuite0, push_back) {
         times.push_back((finish - start).count() / 1e9);
     }
     sort(times.begin(), times.end());
-    double mean_time = std::accumulate(times.begin(), times.end() - TRUNCATIONS, 0.0) / (times.size() - TRUNCATIONS);
+    double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
     std::cout << "threads_num: " << threads_num << "\n";
     std::cout << "count_per_thread: " << count_per_thread << "\n";
     std::cout << "time: " << mean_time << "\n";
@@ -57,7 +55,7 @@ TEST_P(TestStdVectorSuite1, read) {
     const size_t threads_num = std::get<0>(params);
     const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
-    for (int t = 0; t < RUNS; t++) {
+    for (int t = 0; t < Storage::RUNS; t++) {
         std::vector<int> v;
         std::vector<int> res(threads_num);
         auto func = [](std::vector<int>& v, std::vector<int>& res, int num, size_t count) {
@@ -85,7 +83,7 @@ TEST_P(TestStdVectorSuite1, read) {
         times.push_back((finish - start).count() / 1e9);
     }
     sort(times.begin(), times.end());
-    double mean_time = std::accumulate(times.begin(), times.end() - TRUNCATIONS, 0.0) / (times.size() - TRUNCATIONS);
+    double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
     std::cout << "threads_num: " << threads_num << "\n";
     std::cout << "count_per_thread: " << count_per_thread << "\n";
     std::cout << "time: " << mean_time << "\n";

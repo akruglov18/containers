@@ -1,32 +1,32 @@
+#include "Parallelvector5.h"
 #include <gtest/gtest.h>
 #include <vector>
 #include <thread>
 #include <tuple>
-#include <tbb/tbb.h>
 #include <random>
 #include <numeric>
+#include "Storage.h"
 
 namespace {
 
-std::vector<size_t> threads_count = {1, 4, 6, 8, 10, 12};
+std::vector<size_t> threads_count_suite0 = {1, 4, 6, 8, 10, 12};
+std::vector<size_t> threads_count_suite1 = {1, 4, 6, 8, 10, 12};
+std::vector<size_t> threads_count_suite2 = {3, 6, 9, 12};
 std::vector<size_t> elem_count = {1000, 10000, 100000, 1000000};
 
-constexpr int RUNS = 10;
-constexpr int TRUNCATIONS = 2;
-
-typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestTbbVectorSuite0;
-TEST_P(TestTbbVectorSuite0, push_back) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestParallelVector5Suite0;
+TEST_P(TestParallelVector5Suite0, push_back) {
     auto params = GetParam();
     const size_t threads_num = std::get<0>(params);
     const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
-    auto func_push_back = [](tbb::concurrent_vector<int>& v, size_t count) {
+    auto func_push_back = [](ParallelVector5<int, 1000>& v, size_t count) {
         for (int i = 0; i < count; i++) {
             v.push_back(i);
         }
     };
-    for (int t = 0; t < RUNS; t++) {
-        tbb::concurrent_vector<int> v;
+    for (int t = 0; t < Storage::RUNS; t++) {
+        ParallelVector5<int, 1000> v;
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < threads_num; i++) {
@@ -39,32 +39,30 @@ TEST_P(TestTbbVectorSuite0, push_back) {
         times.push_back((finish - start).count() / 1e9);
     }
     sort(times.begin(), times.end());
-    double mean_time = std::accumulate(times.begin(), times.end() - TRUNCATIONS, 0.0) / (times.size() - TRUNCATIONS);
-    std::cout << "threads_num: " << threads_num << "\n";
-    std::cout << "count_per_thread: " << count_per_thread << "\n";
-    std::cout << "time: " << mean_time << "\n";
+    double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
+    Storage::testRes[4][0][threads_num][count_per_thread] = mean_time;
 }
 
-INSTANTIATE_TEST_SUITE_P(/**/, TestTbbVectorSuite0, 
+INSTANTIATE_TEST_SUITE_P(/**/, TestParallelVector5Suite0, 
     testing::Combine(
-        testing::ValuesIn(threads_count),
+        testing::ValuesIn(threads_count_suite0),
         testing::ValuesIn(elem_count)
     )
 );
 
-typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestTbbVectorSuite1;
-TEST_P(TestTbbVectorSuite1, read) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestParallelVector5Suite1;
+TEST_P(TestParallelVector5Suite1, read) {
     auto params = GetParam();
     const size_t threads_num = std::get<0>(params);
     const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
-    for (int t = 0; t < RUNS; t++) {
-        tbb::concurrent_vector<int> v;
+    for (int t = 0; t < Storage::RUNS; t++) {
+        ParallelVector5<int, 1000> v;
         std::vector<int> res(threads_num);
-        auto func = [](tbb::concurrent_vector<int>& v, std::vector<int>& res, int num, size_t count) {
+        auto func = [](ParallelVector5<int, 1000>& v, std::vector<int>& res, int num, size_t count) {
             int sum = 0;
             for (int i = 0; i < count; i++) {
-                if (i < v.size())
+                if (i < v.get_size())
                 {
                     sum += v[i];
                 }
@@ -86,66 +84,66 @@ TEST_P(TestTbbVectorSuite1, read) {
         times.push_back((finish - start).count() / 1e9);
     }
     sort(times.begin(), times.end());
-    double mean_time = std::accumulate(times.begin(), times.end() - TRUNCATIONS, 0.0) / (times.size() - TRUNCATIONS);
-    std::cout << "threads_num: " << threads_num << "\n";
-    std::cout << "count_per_thread: " << count_per_thread << "\n";
-    std::cout << "time: " << mean_time << "\n";
+    double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
+    Storage::testRes[4][1][threads_num][count_per_thread] = mean_time;
 }
 
-INSTANTIATE_TEST_SUITE_P(/**/, TestTbbVectorSuite1, 
+INSTANTIATE_TEST_SUITE_P(/**/, TestParallelVector5Suite1, 
     testing::Combine(
-        testing::ValuesIn(threads_count),
+        testing::ValuesIn(threads_count_suite1),
         testing::ValuesIn(elem_count)
     )
 );
 
-TEST(concurrent_vector, common_test) {
-    auto func_push_back = [](tbb::concurrent_vector<int>& v, size_t count) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestParallelVector5Suite2;
+TEST_P(TestParallelVector5Suite2, common_test) {
+    auto func_push_back = [](ParallelVector5<int, 1000>& v, size_t count) {
         for (int i = 0; i < count; i++) {
             v.push_back(i);
         }
     };
-    auto func_read = [](tbb::concurrent_vector<int>& v, int& res, size_t count) {
+    auto func_read = [](ParallelVector5<int, 1000>& v, int& res, size_t count) {
         int sum = 0;
         std::mt19937 rnd;
         for (int i = 0; i < count; i++) {
-            if (v.size() > 0) {
-                int ind = rnd() % v.size();
+            if (v.get_size() > 0) {
+                int ind = rnd() % v.get_size();
                 sum += v[ind];
             }
         }
         res = sum;
     };
-    auto func_write = [](tbb::concurrent_vector<int>& v, size_t count) {
+    auto func_write = [](ParallelVector5<int, 1000>& v, size_t count) {
         std::mt19937 rnd;
         for (int i = 0; i < count; i++) {
-            if (v.size() > 0) {
-                int ind = rnd() % v.size();
+            if (v.get_size() > 0) {
+                int ind = rnd() % v.get_size();
                 v[ind] = i;
             }
         }
     };
-    const size_t thread_count_pb = 2;
-    const size_t thread_count_read = 4;
-    const size_t thread_count_write = 4;
-    const size_t count_action = 2000000;
-    const std::size_t thread_count = thread_count_pb + thread_count_read + thread_count_write;
+    auto params = GetParam();
+    const size_t threads_num = std::get<0>(params);
+    const size_t thread_count_pb = threads_num / 3;
+    const size_t thread_count_read = threads_num / 3;
+    const size_t thread_count_write = threads_num / 3;
+    const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
-    for (int t = 0; t < RUNS; t++) {
-        tbb::concurrent_vector<int> v;
+    for (int t = 0; t < Storage::RUNS; t++) {
+        ParallelVector5<int, 1000> v;
         std::vector<std::thread> threads;
-        threads.reserve(thread_count);
+        threads.reserve(threads_num);
         std::vector<int> res(thread_count_read);
 
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < thread_count_pb; i++) {
-            threads.push_back(std::thread(func_push_back, std::ref(v), count_action));
+            threads.push_back(std::thread(func_push_back, std::ref(v), count_per_thread));
         }
         for (int i = 0; i < thread_count_read; i++) {
-            threads.push_back(std::thread(func_read, std::ref(v), std::ref(res[i]), count_action));
+            threads.push_back(std::thread(func_read, std::ref(v), std::ref(res[i]), count_per_thread));
         }
         for (int i = 0; i < thread_count_write; i++) {
-            threads.push_back(std::thread(func_write, std::ref(v), count_action));
+            threads.push_back(std::thread(func_write, std::ref(v), count_per_thread));
         }
         for (int i = 0; i < threads.size(); i++) {
             threads[i].join();
@@ -154,10 +152,15 @@ TEST(concurrent_vector, common_test) {
         times.push_back((finish - start).count() / 1e9);
     }
     sort(times.begin(), times.end());
-    double mean_time = std::accumulate(times.begin(), times.end() - TRUNCATIONS, 0.0) / (times.size() - TRUNCATIONS);
-    std::cout << "threads_num: " << thread_count << "\n";
-    std::cout << "count_per_thread: " << count_action << "\n";
-    std::cout << "time: " << mean_time << "\n";
+    double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
+    Storage::testRes[4][2][threads_num][count_per_thread] = mean_time;
 }
+
+INSTANTIATE_TEST_SUITE_P(/**/, TestParallelVector5Suite2, 
+    testing::Combine(
+        testing::ValuesIn(threads_count_suite2),
+        testing::ValuesIn(elem_count)
+    )
+);
 
 }

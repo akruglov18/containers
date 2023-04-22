@@ -74,8 +74,8 @@ private:
         }
         delete[] data;
         data = newData;
-        T* newBLock = new T[block_size];
-        data[ptr_count] = newBLock;
+        T* newBlock = new T[block_size];
+        data[ptr_count] = newBlock;
         ptr_count++;
         capacity += block_size;
     }

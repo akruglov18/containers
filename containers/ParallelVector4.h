@@ -24,7 +24,7 @@ public:
         {
             std::unique_lock<std::shared_mutex> lock(mut);
             if (num_elem >= capacity) {
-                size_t new_capacity = capacity * 2 + 1;
+                size_t new_capacity = max(capacity * 2 + 1, num_elem + 1); // max_elem
                 T* new_data = new int[new_capacity];
                 for (int i = 0; i < capacity; i++)
                 {
@@ -37,6 +37,19 @@ public:
         }
         std::shared_lock<std::shared_mutex> lock(mut);
         data[num_elem] = value;
+        size++;
+    }
+
+    void write(size_t index, const T& value)
+    {
+        std::shared_lock<std::shared_mutex> lock(mut);
+        data[index] = value;
+    }
+
+    T read(size_t index)
+    {
+        std::shared_lock<std::shared_mutex> lock(mut);
+        return data[index];
     }
 
     size_t get_size() const
@@ -52,18 +65,6 @@ public:
     const T& operator[](size_t i) const
     {
         return data[i];
-    }
-    
-    void write(size_t index, const T& value)
-    {
-        std::shared_lock<std::shared_mutex> lock(mut);
-        data[index] = value;
-    }
-
-    T read(size_t index)
-    {
-        std::shared_lock<std::shared_mutex> lock(mut);
-        return data[index];
     }
 
     ~ParallelVector4()

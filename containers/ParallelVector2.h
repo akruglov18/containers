@@ -49,7 +49,7 @@ public:
     {
         return data[i];
     }
-    
+
     void write(size_t index, const T& value)
     {
         std::shared_lock<std::shared_mutex> lock(mut);

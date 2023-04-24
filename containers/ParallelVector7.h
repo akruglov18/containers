@@ -4,9 +4,10 @@
 #include <list>
 #include <atomic>
 #include <shared_mutex>
+#include "Accessor.h"
 
 template<typename T, size_t block_size>
-class ParallelVector5
+class ParallelVector7
 {
 private:
     T** data;
@@ -14,10 +15,10 @@ private:
     std::atomic_size_t cur_elem;
     size_t capacity;
     size_t ptr_count;
-    std::shared_mutex mut;
+    MySharedMutex mut;
 
 public:
-    ParallelVector5() : data(nullptr), size(0), cur_elem(0), capacity(0), ptr_count(0)
+    ParallelVector7() : data(nullptr), size(0), cur_elem(0), capacity(0), ptr_count(0)
     {
     }
 
@@ -26,25 +27,25 @@ public:
         size_t num_elem = cur_elem.fetch_add(1);
         if (num_elem >= capacity)
         {
-            std::unique_lock<std::shared_mutex> lock(mut);
+            MyUniqueLock lock(mut);
             while (num_elem >= capacity) {
                 addNewBlock();
             }
         }
-        std::shared_lock<std::shared_mutex> lock(mut);
+        MySharedLock lock(mut);
         data[num_elem / block_size][num_elem % block_size] = val;
         size++;
     }
 
     T& operator[](std::size_t i)
     {
-        std::shared_lock<std::shared_mutex> lock(mut);
+        MySharedLock lock(mut);
         return data[i / block_size][i % block_size];
     }
 
     const T& operator[](std::size_t i) const
     {
-        std::shared_lock<std::shared_mutex> lock(mut);
+        MySharedLock lock(mut);
         return data[i / block_size][i % block_size];
     }
 
@@ -65,7 +66,7 @@ public:
         return size;
     }
 
-    ~ParallelVector5()
+    ~ParallelVector7()
     {
         clear();
     }

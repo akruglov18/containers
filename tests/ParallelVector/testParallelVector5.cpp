@@ -20,13 +20,13 @@ TEST_P(TestParallelVector5Suite0, push_back) {
     const size_t threads_num = std::get<0>(params);
     const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
-    auto func_push_back = [](ParallelVector5<int, 1000>& v, size_t count) {
+    auto func_push_back = [](ParallelVector5<int, 50000>& v, size_t count) {
         for (int i = 0; i < count; i++) {
             v.push_back(i);
         }
     };
     for (int t = 0; t < Storage::RUNS; t++) {
-        ParallelVector5<int, 1000> v;
+        ParallelVector5<int, 50000> v;
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < threads_num; i++) {
@@ -57,9 +57,9 @@ TEST_P(TestParallelVector5Suite1, read) {
     const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
     for (int t = 0; t < Storage::RUNS; t++) {
-        ParallelVector5<int, 1000> v;
+        ParallelVector5<int, 50000> v;
         std::vector<int> res(threads_num);
-        auto func = [](ParallelVector5<int, 1000>& v, std::vector<int>& res, int num, size_t count) {
+        auto func = [](ParallelVector5<int, 50000>& v, std::vector<int>& res, int num, size_t count) {
             int sum = 0;
             for (int i = 0; i < count; i++) {
                 if (i < v.get_size())
@@ -97,12 +97,12 @@ INSTANTIATE_TEST_SUITE_P(/**/, TestParallelVector5Suite1,
 
 typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestParallelVector5Suite2;
 TEST_P(TestParallelVector5Suite2, common_test) {
-    auto func_push_back = [](ParallelVector5<int, 1000>& v, size_t count) {
+    auto func_push_back = [](ParallelVector5<int, 50000>& v, size_t count) {
         for (int i = 0; i < count; i++) {
             v.push_back(i);
         }
     };
-    auto func_read = [](ParallelVector5<int, 1000>& v, int& res, size_t count) {
+    auto func_read = [](ParallelVector5<int, 50000>& v, int& res, size_t count) {
         int sum = 0;
         std::mt19937 rnd;
         for (int i = 0; i < count; i++) {
@@ -113,7 +113,7 @@ TEST_P(TestParallelVector5Suite2, common_test) {
         }
         res = sum;
     };
-    auto func_write = [](ParallelVector5<int, 1000>& v, size_t count) {
+    auto func_write = [](ParallelVector5<int, 50000>& v, size_t count) {
         std::mt19937 rnd;
         for (int i = 0; i < count; i++) {
             if (v.get_size() > 0) {
@@ -130,7 +130,7 @@ TEST_P(TestParallelVector5Suite2, common_test) {
     const size_t count_per_thread = std::get<1>(params);
     std::vector<double> times;
     for (int t = 0; t < Storage::RUNS; t++) {
-        ParallelVector5<int, 1000> v;
+        ParallelVector5<int, 50000> v;
         std::vector<std::thread> threads;
         threads.reserve(threads_num);
         std::vector<int> res(thread_count_read);

@@ -1,19 +1,7 @@
 #pragma once
 #include <mutex>
 #include <atomic>
-
-struct Accessor
-{
-    std::atomic<int>& counter;
-    Accessor(std::atomic<int>& counter) : counter(counter)
-    {
-    }
-
-    ~Accessor()
-    {
-        counter--;
-    }
-};
+#include "Accessor.h"
 
 template<typename T>
 class ParallelVector

@@ -3,17 +3,18 @@
 #include <shared_mutex>
 #include <atomic>
 #include <algorithm>
+#include "Accessor.h"
 
 template<typename T>
-class ParallelVector4
+class ParallelVector6
 {
 private:
     T* data;
     std::atomic_size_t size;
     size_t capacity;
-    std::shared_mutex mut;
+    MySharedMutex mut;
 public:
-    ParallelVector4() : data(nullptr), size(0), capacity(0)
+    ParallelVector6() : data(nullptr), size(0), capacity(0)
     {
     }
 
@@ -23,7 +24,7 @@ public:
 
         if (num_elem >= capacity)
         {
-            std::unique_lock<std::shared_mutex> lock(mut);
+            MyUniqueLock lock(mut);
             if (num_elem >= capacity) {
                 size_t new_capacity = std::max(capacity * 2 + 1, num_elem + 1); // max_elem
                 T* new_data = new int[new_capacity];
@@ -36,20 +37,20 @@ public:
                 capacity = new_capacity;
             }
         }
-        std::shared_lock<std::shared_mutex> lock(mut);
+        MySharedLock lock(mut);
         data[num_elem] = value;
         size++;
     }
 
     void write(size_t index, const T& value)
     {
-        std::shared_lock<std::shared_mutex> lock(mut);
+        MySharedLock lock(mut);
         data[index] = value;
     }
 
     T read(size_t index)
     {
-        std::shared_lock<std::shared_mutex> lock(mut);
+        MySharedLock lock(mut);
         return data[index];
     }
 
@@ -68,7 +69,7 @@ public:
         return data[i];
     }
 
-    ~ParallelVector4()
+    ~ParallelVector6()
     {
         delete[] data;
     }

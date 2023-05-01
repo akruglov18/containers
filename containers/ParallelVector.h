@@ -6,6 +6,18 @@
 template<typename T>
 class ParallelVector
 {
+    struct Accessor
+    {
+        std::atomic<int>& counter;
+        Accessor(std::atomic<int>& counter) : counter(counter)
+        {
+        }
+
+        ~Accessor()
+        {
+            counter--;
+        }
+    };
 private:
     T* data;
     size_t size;

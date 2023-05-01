@@ -2,19 +2,6 @@
 #include <atomic>
 #include <mutex>
 
-struct Accessor
-{
-    std::atomic<int>& counter;
-    Accessor(std::atomic<int>& counter) : counter(counter)
-    {
-    }
-
-    ~Accessor()
-    {
-        counter--;
-    }
-};
-
 struct MySharedMutex {
 public:
     std::atomic<int> counter;

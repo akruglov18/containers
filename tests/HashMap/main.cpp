@@ -52,6 +52,24 @@ int main(int argc, char** argv)
             out << "\n";
         }
     };
+    auto print_table_ratio_reverse = [&elems_value](const std::map<size_t, std::map<size_t, double>> &table1,
+                                            const std::map<size_t, std::map<size_t, double>> &table2,
+                                            std::ofstream &out) {
+        out << "   ";
+        for (auto x : elems_value)
+        {
+            out << std::setw(8) << x << " ";
+        }
+        out << "\n";
+        for (auto& row : table1)
+        {
+            out << std::setw(2) << row.first << " ";
+            for (auto& value : row.second) {
+                out << std::fixed << std::setprecision(5) << std::setw(8) << table2.at(row.first).at(value.first) / value.second  << " ";
+            }
+            out << "\n";
+        }
+    };
 
     std::string folder = "res";
     std::filesystem::create_directory(folder);
@@ -59,6 +77,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < Storage::testRes.size(); i++) {
         for (int j = 0; j < Storage::testSuff.size(); j++) {
             std::string fileName = folder + Storage::testNames[i] + Storage::testSuff[j] + ".txt";
+            std::cout << fileName << std::endl;
             std::ofstream out(fileName);
             auto& curRes = Storage::testRes[i][j];
             print_table(curRes, out);
@@ -68,11 +87,12 @@ int main(int argc, char** argv)
     folder = "compare";
     std::filesystem::create_directory(folder);
     folder += '/';
-    for (int i = 0; i < Storage::testRes.size(); i++) {
-        for (int k = i + 1; k < Storage::testRes.size(); k++) {
+    for (int i = 0; i < Storage::testRes.size() - 1; i++) {
+        for (int k = i + 1; k < Storage::testRes.size() - 1; k++) {
             for (int j = 0; j < Storage::testSuff.size(); j++) {
                 std::string fileName = folder + Storage::testNames[i] + "_" + 
                                        Storage::testNames[k] + Storage::testSuff[j] + ".txt";
+                std::cout << fileName << std::endl;
                 std::ofstream out(fileName);
                 auto& curRes = Storage::testRes[i][j];
                 auto& otherRes = Storage::testRes[k][j];
@@ -80,6 +100,17 @@ int main(int argc, char** argv)
                 out << "\n";
                 print_table_ratio(otherRes, curRes, out);
             }
+        }
+    }
+    for (int i = 0; i < Storage::testRes.size() - 1; i++) {
+        for (int j = 0; j < Storage::testSuff.size() - 1; j++) {
+            std::string fileName = folder + Storage::testNames[i] + "_" + 
+                                    Storage::testNames[2] + Storage::testSuff[j] + ".txt";
+            std::cout << fileName << std::endl;
+            std::ofstream out(fileName);
+            auto& curRes = Storage::testRes[i][j];
+            auto& stdRes = Storage::testRes[2][j];
+            print_table_ratio_reverse(stdRes, curRes, out);
         }
     }
     return 0;

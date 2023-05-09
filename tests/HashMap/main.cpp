@@ -105,11 +105,11 @@ int main(int argc, char** argv)
     for (int i = 0; i < Storage::testRes.size() - 1; i++) {
         for (int j = 0; j < Storage::testSuff.size() - 1; j++) {
             std::string fileName = folder + Storage::testNames[i] + "_" + 
-                                    Storage::testNames[2] + Storage::testSuff[j] + ".txt";
+                                    Storage::testNames[3] + Storage::testSuff[j] + ".txt";
             std::cout << fileName << std::endl;
             std::ofstream out(fileName);
             auto& curRes = Storage::testRes[i][j];
-            auto& stdRes = Storage::testRes[2][j];
+            auto& stdRes = Storage::testRes[3][j];
             print_table_ratio_reverse(stdRes, curRes, out);
         }
     }

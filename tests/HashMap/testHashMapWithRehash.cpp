@@ -1,5 +1,5 @@
+#include "HashMap.h"
 #include <gtest/gtest.h>
-#include <tbb/tbb.h>
 #include <random>
 #include "Storage.h"
 #include <thread>
@@ -13,11 +13,11 @@ std::vector<size_t> threads_count_suite3 = {3, 6, 9, 12};
 
 std::vector<size_t> elem_count = {1000, 10000, 100000};
 
-typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestTbbHashMapSuite0;
-TEST_P(TestTbbHashMapSuite0, insert) {
-    auto func_insert = [](tbb::concurrent_hash_map<int, int>& m, size_t count, size_t keyOffset) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestHashMapRehashSuite0;
+TEST_P(TestHashMapRehashSuite0, insert) {
+    auto func_insert = [](HashMap<int, int>& m, size_t count, size_t keyOffset) {
         for (int i = 0; i < count; i++) {
-            m.insert({keyOffset + i, i});
+            m.insert(keyOffset + i, i);
         }
     };
     auto params = GetParam();
@@ -26,7 +26,7 @@ TEST_P(TestTbbHashMapSuite0, insert) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m;
+        HashMap<int, int> m;
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < threads_num; i++) {
@@ -37,30 +37,30 @@ TEST_P(TestTbbHashMapSuite0, insert) {
         }
         auto finish = std::chrono::high_resolution_clock::now();
         times[t] = (finish - start).count() / 1e9;
+        ASSERT_EQ(m.getSize(), count_per_thread * threads_num);
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[1][0][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[2][0][threads_num][count_per_thread] = mean_time;
 }
 
-INSTANTIATE_TEST_SUITE_P(/**/, TestTbbHashMapSuite0, 
+INSTANTIATE_TEST_SUITE_P(/**/, TestHashMapRehashSuite0, 
     testing::Combine(
         testing::ValuesIn(threads_count_suite0),
         testing::ValuesIn(elem_count)
     )
 );
 
-typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestTbbHashMapSuite1;
-TEST_P(TestTbbHashMapSuite1, erase) {
-    auto func_erase = [](tbb::concurrent_hash_map<int, int>& m, size_t count, size_t keyOffset) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestHashMapRehashSuite1;
+TEST_P(TestHashMapRehashSuite1, erase) {
+    auto func_erase = [](HashMap<int, int>& m, size_t count, size_t keyOffset) {
         for (int i = 0; i < count; i++) {
             m.erase(keyOffset + i);
         }
     };
-    auto fillMap = [](tbb::concurrent_hash_map<int, int>& m, size_t count) {
-        tbb::concurrent_hash_map<int,int>::accessor accessor;
+    auto fillMap = [](HashMap<int, int>& m, size_t count) {
         for (int i = 0; i < count; i++) {
-            m.insert(accessor, {i, i});
+            m.insert(i, i);
         }
     };
     auto params = GetParam();
@@ -69,7 +69,7 @@ TEST_P(TestTbbHashMapSuite1, erase) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m;
+        HashMap<int, int> m;
         fillMap(m, count_per_thread * threads_num);
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
@@ -81,36 +81,37 @@ TEST_P(TestTbbHashMapSuite1, erase) {
         }
         auto finish = std::chrono::high_resolution_clock::now();
         times[t] = (finish - start).count() / 1e9;
+        ASSERT_EQ(m.getSize(), 0u);
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[1][1][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[2][1][threads_num][count_per_thread] = mean_time;
 }
 
-INSTANTIATE_TEST_SUITE_P(/**/, TestTbbHashMapSuite1, 
+INSTANTIATE_TEST_SUITE_P(/**/, TestHashMapRehashSuite1, 
     testing::Combine(
         testing::ValuesIn(threads_count_suite0),
         testing::ValuesIn(elem_count)
     )
 );
 
-typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestTbbHashMapSuite2;
-TEST_P(TestTbbHashMapSuite2, read) {
-    auto func_read = [](tbb::concurrent_hash_map<int, int>& m, int& res, size_t count, size_t mapSize) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestHashMapRehashSuite2;
+TEST_P(TestHashMapRehashSuite2, read) {
+    auto func_read = [](HashMap<int, int>& m, int& res, size_t count, size_t mapSize) {
         int sum = 0;
         std::mt19937 rnd;
         for (int i = 0; i < count; i++) {
             int ind = rnd() % mapSize;
-            tbb::concurrent_hash_map<int, int>::const_accessor accessor;
-            m.find(accessor, ind);
-            sum += accessor->second;
+            SharedAccessor accessor;
+            auto it = m.find(accessor, ind);
+            ASSERT_NE(it, nullptr);
+            sum += it->second;
         }
         res = sum;
     };
-    auto fillMap = [](tbb::concurrent_hash_map<int, int>& m, size_t count) {
-        tbb::concurrent_hash_map<int, int>::accessor accessor;
+    auto fillMap = [](HashMap<int, int>& m, size_t count) {
         for (int i = 0; i < count; i++) {
-            m.insert(accessor, {i, i});
+            m.insert(i, i);
         }
     };
     auto params = GetParam();
@@ -119,7 +120,7 @@ TEST_P(TestTbbHashMapSuite2, read) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m;
+        HashMap<int, int> m;
         fillMap(m, count_per_thread * threads_num);
         std::vector<std::thread> threads(threads_num);
         std::vector<int> res(threads_num);
@@ -136,45 +137,44 @@ TEST_P(TestTbbHashMapSuite2, read) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[1][2][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[2][2][threads_num][count_per_thread] = mean_time;
 }
 
-INSTANTIATE_TEST_SUITE_P(/**/, TestTbbHashMapSuite2, 
+INSTANTIATE_TEST_SUITE_P(/**/, TestHashMapRehashSuite2, 
     testing::Combine(
         testing::ValuesIn(threads_count_suite0),
         testing::ValuesIn(elem_count)
     )
 );
 
-typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestTbbHashMapSuite3;
-TEST_P(TestTbbHashMapSuite3, common) {
-    auto func_read = [](tbb::concurrent_hash_map<int, int>& m, int& res, size_t count, size_t mapSize) {
+typedef testing::TestWithParam<std::tuple<size_t, size_t>> TestHashMapRehashSuite3;
+TEST_P(TestHashMapRehashSuite3, common) {
+    auto func_read = [](HashMap<int, int>& m, int& res, size_t count, size_t mapSize) {
         int sum = 0;
         std::mt19937 rnd;
         for (int i = 0; i < count; i++) {
             int ind = rnd() % mapSize;
-            tbb::concurrent_hash_map<int, int>::const_accessor accessor;
-            if (m.find(accessor, ind))
-            {
-                sum += accessor->second;
+            SharedAccessor accessor;
+            auto it = m.find(accessor, ind);
+            if (it != nullptr) {
+                sum += it->second;
             }
         }
         res = sum;
     };
-    auto func_insert = [](tbb::concurrent_hash_map<int, int>& m, size_t count, size_t keyOffset) {
+    auto func_insert = [](HashMap<int, int>& m, size_t count, size_t keyOffset) {
         for (int i = 0; i < count; i++) {
-            m.insert({keyOffset + i, i});
+            m.insert(keyOffset + i, i);
         }
     };
-    auto func_erase = [](tbb::concurrent_hash_map<int, int>& m, size_t count, size_t keyOffset) {
+    auto func_erase = [](HashMap<int, int>& m, size_t count, size_t keyOffset) {
         for (int i = 0; i < count; i++) {
             m.erase(keyOffset + i);
         }
     };
-    auto fillMap = [](tbb::concurrent_hash_map<int, int>& m, size_t count) {
-        tbb::concurrent_hash_map<int, int>::accessor accessor;
+    auto fillMap = [](HashMap<int, int>& m, size_t count) {
         for (int i = 0; i < count; i++) {
-            m.insert(accessor, {i, i});
+            m.insert(i, i);
         }
     };
         auto params = GetParam();
@@ -186,7 +186,7 @@ TEST_P(TestTbbHashMapSuite3, common) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m;
+        HashMap<int, int> m;
         std::vector<std::thread> threads;
         threads.reserve(threads_num);
         std::vector<int> res(thread_count_read);
@@ -209,11 +209,11 @@ TEST_P(TestTbbHashMapSuite3, common) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[1][3][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[2][3][threads_num][count_per_thread] = mean_time;
 }
 
 
-INSTANTIATE_TEST_SUITE_P(/**/, TestTbbHashMapSuite3, 
+INSTANTIATE_TEST_SUITE_P(/**/, TestHashMapRehashSuite3, 
     testing::Combine(
         testing::ValuesIn(threads_count_suite3),
         testing::ValuesIn(elem_count)

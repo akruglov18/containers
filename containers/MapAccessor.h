@@ -8,6 +8,12 @@ private:
     std::mutex mut;
 
 public:
+    MySharedMutex() = default;
+    
+    MySharedMutex(const MySharedMutex &other)
+    {
+    }
+
     void SharedLock()
     {
         while (true)
@@ -54,7 +60,6 @@ private:
     bool wasCommonMutInited = false;
 
 public:
-    UniqueAccessor() {}
 
     void initCommon(MySharedMutex &lockMut)
     {
@@ -72,6 +77,15 @@ public:
         mut = &lockMut;
         lockMut.UniqueLock();
         wasMutInited = true;
+    }
+
+    void releaseCommonMut()
+    {
+        if (wasCommonMutInited)
+        {
+            mutCommon->SharedRelease();
+            wasCommonMutInited = false;
+        }
     }
 
     void release()
@@ -119,9 +133,18 @@ public:
     {
         if (wasMutInited) return;
         
-        lockMut.SharedLock();
         mut = &lockMut;
+        lockMut.SharedLock();
         wasMutInited = true;
+    }
+
+    void releaseCommonMut()
+    {
+        if (wasCommonMutInited)
+        {
+            mutCommon->SharedRelease();
+            wasCommonMutInited = false;
+        }
     }
 
     void release()

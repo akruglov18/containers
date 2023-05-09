@@ -40,7 +40,7 @@ TEST_P(TestHashStdMapSuite0, insert) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[2][0][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[3][0][threads_num][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestHashStdMapSuite0, 
@@ -83,7 +83,7 @@ TEST_P(TestHashStdMapSuite1, erase) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[2][1][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[3][1][threads_num][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestHashStdMapSuite1, 
@@ -134,7 +134,7 @@ TEST_P(TestHashStdMapSuite2, read) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[2][2][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[3][2][threads_num][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestHashStdMapSuite2, 

@@ -26,7 +26,7 @@ TEST_P(TestTbbHashMapSuite0, insert) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m(mapSize);
+        tbb::concurrent_hash_map<int, int> m;
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < threads_num; i++) {
@@ -69,7 +69,7 @@ TEST_P(TestTbbHashMapSuite1, erase) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m(mapSize);
+        tbb::concurrent_hash_map<int, int> m;
         fillMap(m, count_per_thread * threads_num);
         std::vector<std::thread> threads(threads_num);
         auto start = std::chrono::high_resolution_clock::now();
@@ -119,7 +119,7 @@ TEST_P(TestTbbHashMapSuite2, read) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m(mapSize);
+        tbb::concurrent_hash_map<int, int> m;
         fillMap(m, count_per_thread * threads_num);
         std::vector<std::thread> threads(threads_num);
         std::vector<int> res(threads_num);
@@ -186,7 +186,7 @@ TEST_P(TestTbbHashMapSuite3, common) {
     std::vector<double> times(Storage::RUNS);
     for (int t = 0; t < Storage::RUNS; t++) {
         const size_t mapSize = count_per_thread * threads_num / 10;
-        tbb::concurrent_hash_map<int, int> m(mapSize);
+        tbb::concurrent_hash_map<int, int> m;
         std::vector<std::thread> threads;
         threads.reserve(threads_num);
         std::vector<int> res(thread_count_read);

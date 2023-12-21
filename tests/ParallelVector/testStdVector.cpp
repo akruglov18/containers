@@ -37,7 +37,7 @@ TEST_P(TestStdVectorSuite0, push_back) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[8][0][1][count_per_thread] = mean_time;
+    Storage::testRes[2][0][1][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestStdVectorSuite0, 
@@ -82,7 +82,7 @@ TEST_P(TestStdVectorSuite1, read) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[8][1][1][count_per_thread] = mean_time;
+    Storage::testRes[2][1][1][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestStdVectorSuite1, 

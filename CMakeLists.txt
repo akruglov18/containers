@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
+project(containers)
+
 include("${CMAKE_SOURCE_DIR}/cmake/Configure.cmake")
 
 SET(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

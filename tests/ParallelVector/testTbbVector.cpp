@@ -39,7 +39,7 @@ TEST_P(TestTbbVectorSuite0, push_back) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[7][0][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[1][0][threads_num][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestTbbVectorSuite0, 
@@ -84,7 +84,7 @@ TEST_P(TestTbbVectorSuite1, read) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[7][1][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[1][1][threads_num][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestTbbVectorSuite1, 
@@ -152,7 +152,7 @@ TEST_P(TestTbbVectorSuite2, common_test) {
     }
     sort(times.begin(), times.end());
     double mean_time = std::accumulate(times.begin(), times.end() - Storage::TRUNCATIONS, 0.0) / (times.size() - Storage::TRUNCATIONS);
-    Storage::testRes[7][2][threads_num][count_per_thread] = mean_time;
+    Storage::testRes[1][2][threads_num][count_per_thread] = mean_time;
 }
 
 INSTANTIATE_TEST_SUITE_P(/**/, TestTbbVectorSuite2, 

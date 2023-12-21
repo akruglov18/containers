@@ -1,2 +1,2 @@
 add_subdirectory(ParallelVector)
-add_subdirectory(HashMap)
+# add_subdirectory(HashMap)
